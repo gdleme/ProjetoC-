@@ -1,0 +1,73 @@
+@page
+@model CafeAlvoradaCSharp.Pages.CadastroLicencaModel
+@{
+    ViewData["Title"] = "Cadastro de Licença";
+}
+
+<div class="greeting">
+    <span>Olá,</span>
+    <b>@Model.NomeUsuario</b>
+</div>
+
+<section class="section-card">
+    <h2>Cadastro de licença</h2>
+    <p>Cadastre licenças para que sejam visualizadas</p>
+    <div class="module-info">
+        <span>4 Módulos</span>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="licenca-form">
+        <div class="input-group">
+            <label asp-for="NovaLicenca.NomeLicenca" class="input-label">Nome da licença</label>
+            <input asp-for="NovaLicenca.NomeLicenca" placeholder="NOME DA LICENÇA" class="input-field" required>
+        </div>
+
+        <div class="input-group">
+            <label asp-for="NovaLicenca.Cnpj" class="input-label">CNPJ</label>
+            <input asp-for="NovaLicenca.Cnpj" placeholder="Ex: 00.000.000/0000-00" class="input-field" required>
+        </div>
+
+        <div class="input-group">
+            <label asp-for="NovaLicenca.OrgaoResponsavel" class="input-label">Órgão responsável pelo licenciamento</label>
+            <input asp-for="NovaLicenca.OrgaoResponsavel" placeholder="NOME DO ÓRGÃO" class="input-field" required>
+        </div>
+
+        <div class="input-group">
+            <label asp-for="NovaLicenca.DataValidade" class="input-label">Data de validade da licença</label>
+            <input type="date" asp-for="NovaLicenca.DataValidade" class="input-field" required>
+        </div>
+
+        <div class="input-group">
+            <label asp-for="DocumentoUpload" class="input-label">Anexar documento</label>
+            <input asp-for="DocumentoUpload" class="input-field-file">
+            <small>Tipos de arquivo permitidos: PDF, JPG, PNG (Max: 5MB)</small>
+        </div>
+
+        <div class="input-group">
+            <div class="input-label">Enviar notificação - prazo em dias antes da expiração</div>
+            <div class="notification-options">
+                <label class="notification-option">
+                    <input type="radio" asp-for="NovaLicenca.PrazoExpiracao" value="140" required>
+                    <span>140 dias.</span>
+                </label>
+                <label class="notification-option">
+                    <input type="radio" asp-for="NovaLicenca.PrazoExpiracao" value="90" required>
+                    <span>90 dias.</span>
+                </label>
+                <label class="notification-option">
+                    <input type="radio" asp-for="NovaLicenca.PrazoExpiracao" value="60" required>
+                    <span>60 dias.</span>
+                </label>
+                <label class="notification-option">
+                    <input type="radio" asp-for="NovaLicenca.PrazoExpiracao" value="30" required>
+                    <span>30 dias.</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-salvar">SALVAR</button>
+            <a asp-page="/Licencas" class="btn-cancelar" style="text-decoration: none; text-align: center;">Cancelar</a>
+        </div>
+    </form>
+</section>

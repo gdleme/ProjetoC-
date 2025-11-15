@@ -1,0 +1,15 @@
+@using Microsoft.AspNetCore.Identity
+@using CafeAlvoradaCSharp.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@if (SignInManager.IsSignedIn(User))
+{
+    <div class="nav-item logout">
+        <span>
+            <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/Index", new { area = "" })" method="post">
+                <button type;="submit" style="background:none; border:none; padding:0; color: #7D7D7D; font-size: 16px; cursor:pointer;">Sair</button>
+            </form>
+        </span>
+    </div>
+}

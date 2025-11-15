@@ -1,0 +1,355 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+* {
+    font-family: "Instrument Sans", sans-serif;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: #F6F6F6;
+}
+
+nav {
+    width: 150px;
+    background-color: white;
+    border-radius: 0 20px 20px 0;
+    padding: 20px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 100;
+}
+
+nav .nav-item a {
+    padding: 10px;
+    border-radius: 5px;
+    text-decoration: none;
+    color: #7D7D7D;
+    transition: 0.2s ease;
+}
+
+nav .nav-item a:hover {
+    background-color: #454545;
+    color: #fff;
+}
+
+nav img {
+    width: 100px;
+    height: 100px;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.nav-item img {
+    width: 27px;
+    height: 27px;
+}
+
+.nav-item span {
+    color: #7D7D7D;
+    font-size: 16px;
+    font-family: 'Inter', sans-serif;
+}
+
+.nav-item:nth-child(3) img,
+.nav-item:nth-child(4) img,
+.nav-item:nth-child(5) img {
+    width: 23px;
+    height: 23px;
+}
+
+main {
+    flex: 1;
+    padding: 30px;
+    margin-left: 150px;
+}
+
+.header {
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.header p {
+    font-size: 14px;
+    color: #777;
+    margin-bottom: 10px;
+}
+
+.produtos-count {
+    background-color: #EAEAEA;
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #555;
+    margin-top: 5px;
+}
+
+.filtros {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap; /* Para garantir que os botões se ajustem em telas menores */
+}
+
+.filtros select {
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+.filtros button {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    background-color: #9D6A5E;
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex; /* Para centralizar ícones e texto */
+    align-items: center;
+    gap: 5px; /* Espaçamento entre ícone e texto */
+}
+
+.filtros button:hover {
+    background-color: #814d43;
+}
+
+/* Estilo para o botão de iniciar modo de exclusão */
+.delete-mode-toggle {
+    background-color: #8c5b4e !important;
+}
+.delete-mode-toggle:hover {
+    background-color: #6a4539 !important;
+}
+
+/* Estilo para o botão de confirmar exclusão de múltiplos (que aparece após selecionar itens) */
+.delete-button-multiple {
+    background-color: #dc3545 !important; /* Vermelho para exclusão */
+}
+
+.delete-button-multiple:hover {
+    background-color: #c82333 !important;
+}
+
+/* Estilo para o botão de cancelar exclusão */
+.cancel-button-multiple {
+    background-color: #6c757d !important; /* Cinza para cancelar */
+}
+.cancel-button-multiple:hover {
+    background-color: #5a6268 !important;
+}
+
+/* Classe para ocultar botões e colunas */
+.hidden-button {
+    display: none !important;
+}
+
+.hidden-checkbox-col {
+    display: none !important;
+}
+
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+th,
+td {
+    padding: 12px;
+    text-align: left;
+    font-size: 14px;
+    border-bottom: 1px solid #eee;
+}
+
+th {
+    background-color: #f9f9f9;
+    color: #555;
+    font-weight: 500;
+}
+
+td {
+    color: #333;
+}
+
+/* Célula que contém o nome do produto e os botões de ação */
+.product-actions-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Espaçamento entre os elementos (botão, lápis, nome) */
+}
+
+.plus-button {
+    padding: 5px 10px !important;
+    font-weight: bolder;
+    background-color: #5cb85c !important;
+    border-radius: 5px;
+    height: auto !important; /* Garante que o height seja auto */
+    width: auto !important; /* Garante que o width seja auto */
+}
+
+.plus-button:hover {
+    background-color: #4cae4c !important;
+}
+
+/* Botão de Edição (lápis) */
+.action-button.edit-button {
+    background-color: #8c5b4e; /* Cor definida na requisição */
+    color: white;
+    border: none;
+    padding: 7px; /* Ajuste o padding para o ícone */
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em; /* Tamanho do ícone */
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px; /* Largura fixa para botões de ícone */
+    height: 30px; /* Altura fixa para botões de ícone */
+}
+
+.action-button.edit-button:hover {
+    background-color: #6a4539; /* Hover escurecido */
+}
+
+/* Checkbox */
+.checkbox_produto {
+    margin-right: 5px;
+}
+
+#selecionar_todos {
+    margin-left: 5px;
+}
+
+.logout {
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+    width: 100%;
+    text-align: center;
+}
+
+/* ESTILOS DOS MODAIS */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.4);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    width: 100%;
+    max-width: 600px;
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-sizing: border-box;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.modal-content input,
+.modal-content select {
+    margin-bottom: 12px;
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #d0d5dd;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #667085;
+    box-sizing: border-box;
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #667085;
+}
+
+.modal-footer {
+    text-align: right;
+}
+
+.modal-button {
+    padding: 10px 24px;
+    background-color: #9d6a5e;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/* Estilos específicos para o modal de entrada individual */
+.modal-entrada-individual .modal-content {
+    background: #F6F6F6;
+    padding: 32px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 655px;
+}
+
+.modal-entrada-individual .modal-header {
+    background: white;
+    border-radius: 6px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.modal-entrada-individual .modal-header div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.modal-entrada-individual .modal-header span:first-child {
+    font-size: 18px;
+    cursor: pointer;
+}
+.modal-entrada-individual input {
+    background: white;
+}

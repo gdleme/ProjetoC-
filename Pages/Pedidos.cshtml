@@ -1,0 +1,278 @@
+@page
+@model CafeAlvoradaCSharp.Pages.PedidosModel
+@{
+    ViewData["Title"] = "Pedidos";
+}
+
+<div class="main">
+    <div class="header">
+        <b>@Model.NomeUsuario</b>
+        <p class="subtext">Nesta área são relacionados os pedidos em andamento</p>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.MensagemFeedback))
+    {
+        <p style="color: @(Model.MensagemFeedback.StartsWith("Erro:") ? "red" : "green"); font-weight: bold; text-align: center; margin-bottom: 15px;">
+            @Model.MensagemFeedback
+        </p>
+    }
+
+    <form method="GET" class="filter-bar" style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+        <input type="text" name="filtroNrPedido" placeholder="Nr. Pedido" value="@Model.FiltroNrPedido" style="flex: 1; min-width: 120px;">
+        <select name="filtroClienteId" style="flex: 1; min-width: 150px;" asp-items="Model.ClientesSelectList">
+            <option value="">Nome do cliente</option>
+        </select>
+        <input type="date" name="filtroDataPedido" value="@Model.FiltroDataPedido" style="flex: 1; min-width: 150px;">
+        <input type="text" name="filtroMesa" placeholder="Filtrar por Mesa" value="@Model.FiltroMesa" style="flex: 1; min-width: 120px;">
+        <button type="submit" class="btn" style="padding: 10px 20px; background: #9e7563; color: white; border: none; border-radius: 6px; cursor: pointer;">Filtrar</button>
+        <button type="button" onclick="document.getElementById('popupNovoPedido').style.display='flex'"
+                style="padding: 10px 20px; background: #9e7563; color: white; border: none; border-radius: 6px; cursor: pointer;">
+            Novo Pedido
+        </button>
+    </form>
+
+    <div id="popupNovoPedido">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="title">
+                    <span onclick="document.getElementById('popupNovoPedido').style.display='none'">←</span>
+                    <h2>Novo pedido</h2>
+                </div>
+                <p>Realize um novo pedido</p>
+            </div>
+
+            <form method="POST" asp-page-handler="SalvarPedido">
+                <label style="font-size: 14px; color: #667085;">Selecione o Cliente:</label>
+                <select name="clienteId" required asp-items="Model.ClientesSelectList">
+                    <option value="" disabled selected>-- Selecione um cliente --</option>
+                </select>
+
+                <label style="font-size: 14px; color: #667085;">Itens do Pedido:</label>
+                <div id="product-items-container">
+                    </div>
+                <button type="button" id="add-product-btn">Adicionar Produto</button>
+
+                <label for="mesa" style="font-size: 14px; color: #667085;">Mesa:</label>
+                <input type="text" name="mesa" id="mesa" placeholder="Mesa (Ex: Mesa 03)">
+
+                <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+                    <button type="submit">Salvar Pedido</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="popupEditarPedido">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="title">
+                    <span onclick="document.getElementById('popupEditarPedido').style.display='none'">←</span>
+                    <h2>Editar pedido</h2>
+                </div>
+                <p>Altere os detalhes do pedido</p>
+            </div>
+
+            <form method="POST" asp-page-handler="EditarPedido">
+                <input type="hidden" name="pedidoId" id="edit_pedido_id">
+
+                <label for="edit_cliente_id">Selecione o Cliente:</label>
+                <select name="clienteId" id="edit_cliente_id" required asp-items="Model.ClientesSelectList">
+                    <option value="" disabled selected>-- Selecione um cliente --</option>
+                </select>
+
+                <label>Itens do Pedido:</label>
+                <div id="edit-product-items-container">
+                    </div>
+                <button type="button" id="edit-add-product-btn">Adicionar Outro Produto</button>
+
+                <label for="edit_mesa">Mesa:</label>
+                <input type="text" name="mesa" id="edit_mesa" placeholder="Mesa (Ex: Mesa 03)">
+
+                <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+                    <button type="submit">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <div class="cards">
+        @if (!Model.Pedidos.Any())
+        {
+            <p style="text-align: center; margin-top: 20px; width: 100%;">Nenhum pedido encontrado. Crie um novo pedido!</p>
+        }
+        else
+        {
+            @foreach (var pedido in Model.Pedidos)
+            {
+                <div class="card">
+                    <p><strong>Pedido Nº @pedido.PedidoId</strong></p>
+                    <p>
+                        @foreach (var item in pedido.ItensPedido)
+                        {
+                            <span>@item.ProdutoNome (@item.Quantidade und)</span><br>
+                        }
+                    </p>
+                    <p><strong>Total do Pedido:</strong> @pedido.Valor.ToString("C", new System.Globalization.CultureInfo("pt-BR"))</p>
+                    <p>
+                        <strong>Cliente:</strong> @pedido.Cliente.Nome<br>
+                        <strong>E-mail:</strong> @pedido.Cliente.Email<br>
+                        <strong>Telefone:</strong> @pedido.Cliente.Telefone
+                    </p>
+                    <div class="info-tag">Mesa @pedido.Mesa</div>
+                    <div class="info-tag" style="top: 65px;">Data: @pedido.DataPedido.ToString("d/M/yyyy")</div>
+
+                    <div style="margin-top: 10px;">
+                        <form method="POST" asp-page-handler="ConcluirPedido" style="display:inline;" onsubmit="return confirm('Tem certeza que deseja concluir este pedido?');">
+                            <input type="hidden" name="pedidoId" value="@pedido.PedidoId">
+                            <button type="submit" class="btn-finish">Concluir</button>
+                        </form>
+                        
+                        <button class="btn-edit"
+                                onclick="openEditModal(
+                                    @pedido.PedidoId,
+                                    @pedido.ClienteId,
+                                    '@Html.Raw(System.Text.Json.JsonSerializer.Serialize(pedido.Mesa))',
+                                    @Html.Raw(System.Text.Json.JsonSerializer.Serialize(pedido.ItensPedido.Select(i => new { i.ProdutoId, i.Quantidade })))
+                                )">
+                            Editar
+                        </button>
+                        
+                        <form method="POST" asp-page-handler="ExcluirPedido" style="display:inline;" onsubmit="return confirm('Tem certeza que deseja excluir este pedido?');">
+                            <input type="hidden" name="pedidoId" value="@pedido.PedidoId">
+                            <button type="submit" class="btn-delete">Excluir</button>
+                        </form>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Passa a lista de produtos do C# (Model) para o JavaScript
+        const produtosDisponiveis = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ProdutosSelectList));
+
+        function criarSelectProduto() {
+            const select = document.createElement('select');
+            select.name = 'produtoIds[]';
+            select.required = true;
+
+            const defaultOption = document.createElement('option');
+            defaultOption.value = "";
+            defaultOption.disabled = true;
+            defaultOption.selected = true;
+            defaultOption.textContent = "-- Selecione um produto --";
+            select.appendChild(defaultOption);
+
+            produtosDisponiveis.forEach(produto => {
+                const option = document.createElement('option');
+                option.value = produto.Value; // 'Value' vem do SelectListItem
+                option.textContent = produto.Text; // 'Text' vem do SelectListItem
+                select.appendChild(option);
+            });
+            return select;
+        }
+
+        function addProductItem(containerId) {
+            const container = document.getElementById(containerId);
+            const productItemDiv = document.createElement('div');
+            productItemDiv.classList.add('product-item');
+
+            const select = criarSelectProduto();
+
+            const quantityInput = document.createElement('input');
+            quantityInput.type = "number";
+            quantityInput.name = "quantidades[]";
+            quantityInput.placeholder = "Qtd";
+            quantityInput.min = "1";
+            quantityInput.value = "1";
+            quantityInput.required = true;
+            quantityInput.style.width = "80px";
+
+            const removeButton = document.createElement('button');
+            removeButton.type = "button";
+            removeButton.classList.add('remove-product-btn');
+            removeButton.textContent = "Remover";
+            removeButton.onclick = function () {
+                if (container.querySelectorAll('.product-item').length > 1) {
+                    productItemDiv.remove();
+                } else {
+                    alert("Um pedido deve ter pelo menos um produto.");
+                }
+            };
+
+            productItemDiv.appendChild(select);
+            productItemDiv.appendChild(quantityInput);
+            productItemDiv.appendChild(removeButton);
+
+            container.appendChild(productItemDiv);
+        }
+
+        // Adicionar um item inicial no modal de Novo Pedido
+        document.addEventListener('DOMContentLoaded', () => {
+             addProductItem('product-items-container');
+        });
+
+        // Event listener para o botão "Adicionar Outro Produto" no modal de Novo Pedido
+        document.getElementById('add-product-btn').addEventListener('click', () => {
+            addProductItem('product-items-container');
+        });
+
+        // Event listener para o botão "Adicionar Outro Produto" no modal de Edição
+        document.getElementById('edit-add-product-btn').addEventListener('click', () => {
+            addProductItem('edit-product-items-container');
+        });
+
+        // Função para abrir o modal de edição e preencher os dados
+        function openEditModal(pedidoId, clienteId, mesa, itens) {
+            document.getElementById('edit_pedido_id').value = pedidoId;
+            document.getElementById('edit_cliente_id').value = clienteId;
+            document.getElementById('edit_mesa').value = mesa;
+
+            const editProductItemsContainer = document.getElementById('edit-product-items-container');
+            editProductItemsContainer.innerHTML = ''; // Limpa os itens antigos
+
+            if (itens && itens.length > 0) {
+                itens.forEach(item => {
+                    const productItemDiv = document.createElement('div');
+                    productItemDiv.classList.add('product-item');
+
+                    const select = criarSelectProduto();
+                    select.value = item.ProdutoId; // Seleciona o produto
+
+                    const quantityInput = document.createElement('input');
+                    quantityInput.type = "number";
+                    quantityInput.name = "quantidades[]";
+                    quantityInput.placeholder = "Qtd";
+                    quantityInput.min = "1";
+                    quantityInput.value = item.Quantidade; // Define a quantidade
+                    quantityInput.required = true;
+                    quantityInput.style.width = "80px";
+
+                    const removeButton = document.createElement('button');
+                    removeButton.type = "button";
+                    removeButton.classList.add('remove-product-btn');
+                    removeButton.textContent = "Remover";
+                    removeButton.onclick = function() {
+                        if (editProductItemsContainer.querySelectorAll('.product-item').length > 1) {
+                            productItemDiv.remove();
+                        } else {
+                            alert("Um pedido deve ter pelo menos um produto.");
+                        }
+                    };
+                    
+                    productItemDiv.appendChild(select);
+                    productItemDiv.appendChild(quantityInput);
+                    productItemDiv.appendChild(removeButton);
+                    editProductItemsContainer.appendChild(productItemDiv);
+                });
+            } else {
+                addProductItem('edit-product-items-container');
+            }
+
+            document.getElementById('popupEditarPedido').style.display = 'flex';
+        }
+    </script>
+}

@@ -1,0 +1,88 @@
+@page
+@model CafeAlvoradaCSharp.Pages.LicencasModel
+@{
+    ViewData["Title"] = "Licenças";
+}
+
+<div class="greeting">
+    <span>Olá,</span>
+    <b>@Model.NomeUsuario</b>
+</div>
+
+<section class="section-card">
+    <h2>Gestão de Licenças</h2>
+    <p>Nesta área são relacionados as licenças e alvarás de funcionamento</p>
+    <div class="tag">
+        <span>@Model.TotalLicencas Licenças</span>
+    </div>
+    <div class="btn-cadastrar-licenca">
+        <a asp-page="/CadastroLicenca">Cadastrar Nova Licença</a>
+    </div>
+</section>
+
+<section>
+    <div class="section-card">
+        <form method="GET">
+            <div class="filter-header">
+                <div class="filter">
+                    <div class="filter-content-wrapper">
+                        <label for="filtro_licenca">Licença</label>
+                        <select name="filtroLicenca" asp-items="Model.NomesLicencasSL" class="filter-select">
+                            <option value="">Todas</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter">
+                    <div class="filter-content-wrapper">
+                        <label for="filtro_cnpj">CNPJ</label>
+                        <select name="filtroCnpj" asp-items="Model.CnpjsLicencasSL" class="filter-select">
+                            <option value="">Todos</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn-filtrar">Filtrar</button>
+            </div>
+        </form>
+        
+        <div class="table-header">
+            <div>Licença</div>
+            <div>Validade</div>
+            <div>Órgão</div>
+            <div>CNPJ</div>
+            <div>Notificação</div>
+            <div>Ações</div>
+        </div>
+
+        @if (Model.Licencas.Any())
+        {
+            @foreach (var licenca in Model.Licencas)
+            {
+                <div class="table-row">
+                    <div>@licenca.NomeLicenca</div>
+                    <div>@licenca.DataValidade.ToString("d/M/yyyy")</div>
+                    <div>@licenca.OrgaoResponsavel</div>
+                    <div>@licenca.Cnpj</div>
+                    <div class="notificacao-badge @licenca.StatusClass">
+                        <span>@licenca.StatusNotificacao</span>
+                    </div>
+                    <div>
+                        @if (!string.IsNullOrEmpty(licenca.CaminhoDocumento))
+                        {
+                            <a asp-page="/DownloadLicenca" asp-route-id="@licenca.LicencaId" title="Baixar Licença">
+                                <img src="~/icons/download.png" alt="Baixar">
+                            </a>
+                        }
+                        else
+                        {
+                            <span>N/A</span>
+                        }
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class='table-row no-data'><div style='grid-column: 1 / span 6; text-align: center; padding: 20px;'>Nenhuma licença encontrada.</div></div>
+        }
+    </div>
+</section>

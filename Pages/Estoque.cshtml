@@ -1,0 +1,300 @@
+@page
+@model CafeAlvoradaCSharp.Pages.EstoqueModel
+@{
+    ViewData["Title"] = "Estoque";
+}
+
+<div class="header">
+    <b>@Model.NomeUsuario</b>
+    <h1>← Controle de estoque</h1>
+    <p>Nesta área são relacionados os produtos em estoque.</p>
+    <div class="produtos-count">
+        @Model.Produtos.Count Produtos
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.MensagemFeedback))
+{
+    <p style="color: @(Model.MensagemFeedback.StartsWith("Erro:") ? "red" : "green"); font-weight: bold; text-align: center; margin-bottom: 15px;">
+        @Model.MensagemFeedback
+    </p>
+}
+
+@if (Model.ProdutosComAlerta.Any())
+{
+    <div style="background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
+        <strong>ATENÇÃO: Produtos com estoque baixo!</strong><br>
+        @foreach (var alerta in Model.ProdutosComAlerta)
+        {
+            <span>- @alerta.Nome (Estoque: @alerta.Quantidade, Limite: @alerta.LimiteAlerta)</span><br>
+        }
+    </div>
+}
+
+<div class="filtros">
+    <form method="GET" style="display: flex; gap: 10px;">
+        <input type="text" name="filtroProduto" placeholder="Nome do Produto" value="@Model.FiltroProduto" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+        <button type="submit" class="modal-button" style="background-color: #5cb85c;">Filtrar</button>
+    </form>
+
+    <button onclick="document.getElementById('cadastroProdutoModal').style.display='flex'" class="modal-button">Cadastro de Produto</button>
+    <button onclick="document.getElementById('saidaProdutoModal').style.display='flex'" class="modal-button">Saída de Produto</button>
+    <button id="toggle_exclusao_mode_btn" onclick="toggleExclusaoMode()" class="modal-button delete-mode-toggle"><i class="fas fa-trash-alt"></i> Excluir Itens</button>
+    <button id="confirm_delete_selected_btn" onclick="openDeleteSelectedModal()" class="modal-button delete-button-multiple hidden-button"><i class="fas fa-check"></i> Confirmar Exclusão</button>
+    <button id="cancel_delete_mode_btn" onclick="toggleExclusaoMode()" class="modal-button cancel-button-multiple hidden-button"><i class="fas fa-times"></i> Cancelar</button>
+</div>
+
+<div id="cadastroProdutoModal" class="modal-overlay">
+    <div class="modal-content">
+        <button onclick="document.getElementById('cadastroProdutoModal').style.display='none'" class="modal-close-btn">×</button>
+        <div style="margin-bottom: 16px;">
+            <h2 style="margin: 0; font-size: 20px; color: #344054;">Cadastro de produto</h2>
+            <p style="margin-top: 4px; font-size: 14px; color: #667085;">
+                Realize o cadastro de um novo produto que ainda não existe em estoque
+            </p>
+        </div>
+        <form method="POST" asp-page-handler="CadastrarProduto">
+            <input type="text" asp-for="ProdutoNovo.Nome" placeholder="Digite o nome do produto" required>
+            <input type="number" asp-for="ProdutoNovo.Quantidade" placeholder="Digite a quantidade de entrada" required>
+            <select asp-for="ProdutoNovo.UnidadeMedida" required>
+                <option value="" disabled selected>-- Selecione a unidade de medida --</option>
+                <option value="Kg">Kg</option>
+                <option value="UND">UND (Unidade)</option>
+            </select>
+            <input type="number" step="0.01" asp-for="ProdutoNovo.Valor" placeholder="Digite o valor unitário do produto" required>
+            <input type="number" asp-for="ProdutoNovo.LimiteAlerta" placeholder="Limite mínimo em estoque para alerta" required>
+            <div class="modal-footer">
+                <button type="submit" class="modal-button">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="saidaProdutoModal" class="modal-overlay">
+    <div class="modal-content">
+        <button onclick="document.getElementById('saidaProdutoModal').style.display='none'" class="modal-close-btn">×</button>
+        <div style="margin-bottom: 16px;">
+            <h2 style="margin: 0; font-size: 20px; color: #344054;">Saída de produto</h2>
+            <p style="margin-top: 4px; font-size: 14px; color: #667085;">
+                Selecione o produto que deseja realizar a saída
+            </p>
+        </div>
+        <form method="POST" asp-page-handler="SaidaProduto">
+            <select name="produtoIdSaida" required>
+                <option value="" disabled selected>-- Selecione um produto --</option>
+                @foreach (var produto in Model.Produtos)
+                {
+                    <option value="@produto.ProdutoId">@produto.Nome</option>
+                }
+            </select>
+            <input type="number" name="quantidadeSaida" placeholder="Digite a quantidade de saída" required>
+            <div class="modal-footer">
+                <button type="submit" class="modal-button">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<form id="form_excluir_selecionados" method="POST" asp-page-handler="ExcluirSelecionados">
+    <table>
+        <thead>
+            <tr>
+                <th class="checkbox-header hidden-checkbox-col"><input type="checkbox" id="selecionar_todos"></th>
+                <th>Produto</th>
+                <th>Quantidade</th>
+                <th>Unidade de medida</th>
+                <th>Valor unitário</th>
+                <th>Valor em estoque</th>
+                <th>Limite</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Produtos.Any())
+            {
+                @foreach (var linha in Model.Produtos)
+                {
+                    var valorEmEstoque = (linha.Quantidade ?? 0) * linha.Valor;
+                    var alertaLimite = (linha.Quantidade <= linha.LimiteAlerta && linha.LimiteAlerta > 0) ? "background-color: #ffe0e0;" : "";
+                    
+                    <tr style="@alertaLimite">
+                        <td class="checkbox-cell hidden-checkbox-col">
+                            <input type="checkbox" name="produtosIds" value="@linha.ProdutoId" class="checkbox_produto">
+                        </td>
+                        <td class="product-actions-cell">
+                            <button type="button" onclick="openEntradaModal(@linha.ProdutoId, '@Html.Raw(System.Text.Json.JsonSerializer.Serialize(linha.Nome))')"
+                                    class="modal-button plus-button" title="Adicionar Entrada">
+                                +
+                            </button>
+                            <button type="button" onclick="openEditModal(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(linha)))"
+                                    class="action-button edit-button" title="Editar Produto">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                            <span style="margin-left: 10px;">@linha.Nome</span>
+                            @if (linha.Quantidade <= linha.LimiteAlerta && linha.LimiteAlerta > 0)
+                            {
+                                <span style="color: orange; font-weight: bold; margin-left: 5px; font-size: 0.8em;">(Baixo)</span>
+                            }
+                        </td>
+                        <td>@linha.Quantidade</td>
+                        <td>@linha.UnidadeMedida</td>
+                        <td>@linha.Valor.ToString("C", new System.Globalization.CultureInfo("pt-BR"))</td>
+                        <td>@valorEmEstoque.ToString("C", new System.Globalization.CultureInfo("pt-BR"))</td>
+                        <td>@linha.LimiteAlerta</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr><td colspan='7' style='text-align:center;'>Nenhum produto encontrado.</td></tr>
+            }
+        </tbody>
+    </table>
+</form>
+
+<div id="popupEntrada" class="modal-overlay modal-entrada-individual">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div>
+                <span onclick="document.getElementById('popupEntrada').style.display='none'"
+                      style="font-size: 18px; cursor: pointer;">←</span>
+                <span style="font-size: 18px; font-weight: 600; color: #344054;">Entrada de produto</span>
+            </div>
+            <span style="font-size: 14px; font-weight: 400; color: #667085;">Faça o lançamento de entrada do produto selecionado</span>
+        </div>
+
+        <form method="POST" asp-page-handler="EntradaProduto">
+            <input type="hidden" id="produto_id_entrada_hidden" name="produtoIdEntrada">
+            <p id="produto_nome_entrada" style="font-weight: 600; margin-bottom: 10px;"></p>
+            <input type="number" name="quantidadeEntrada" placeholder="Digite a quantidade de entrada" required>
+            <input type="number" step="0.01" name="valorUnitarioEntrada" placeholder="Digite o valor unitário do produto" required>
+            <div class="modal-footer">
+                <button type="submit" class="modal-button">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="editarProdutoModal" class="modal-overlay">
+    <div class="modal-content">
+        <button onclick="document.getElementById('editarProdutoModal').style.display='none'" class="modal-close-btn">×</button>
+        <div style="margin-bottom: 16px;">
+            <h2 style="margin: 0; font-size: 20px; color: #344054;">Editar produto</h2>
+            <p style="margin-top: 4px; font-size: 14px; color: #667085;">
+                Altere as informações do produto selecionado.
+            </p>
+        </div>
+        <form method="POST" asp-page-handler="EditarProduto">
+            <input type="hidden" asp-for="ProdutoEdicao.ProdutoId" id="edit_produto_id">
+            <input type="text" asp-for="ProdutoEdicao.Nome" id="edit_nome_produto" placeholder="Nome do Produto" required>
+            <input type="number" asp-for="ProdutoEdicao.Quantidade" id="edit_quantidade" placeholder="Quantidade" required>
+            <select asp-for="ProdutoEdicao.UnidadeMedida" id="edit_unidade_medida" required>
+                <option value="Kg">Kg</option>
+                <option value="UND">UND (Unidade)</option>
+            </select>
+            <input type="number" step="0.01" asp-for="ProdutoEdicao.Valor" id="edit_valor_unitario" placeholder="Valor Unitário" required>
+            <input type="number" asp-for="ProdutoEdicao.LimiteAlerta" id="edit_limite_minimo" placeholder="Limite Mínimo para Alerta" required>
+            <div class="modal-footer">
+                <button type="submit" class="modal-button">Salvar Edição</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="confirmarExclusaoMultiplaModal" class="modal-overlay">
+    <div class="modal-content">
+        <button onclick="document.getElementById('confirmarExclusaoMultiplaModal').style.display='none'" class="modal-close-btn">×</button>
+        <div style="margin-bottom: 16px;">
+            <h2 style="margin: 0; font-size: 20px; color: #344054;">Confirmar Exclusão</h2>
+            <p style="margin-top: 4px; font-size: 14px; color: #667085;">
+                Tem certeza que deseja excluir os produtos selecionados? Esta ação não pode ser desfeita.
+            </p>
+        </div>
+        <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+            <button type="button" onclick="document.getElementById('confirmarExclusaoMultiplaModal').style.display='none'" class="modal-button" style="background-color: #6c757d;">Cancelar</button>
+            <button type="button" onclick="submitDeleteForm()" class="modal-button" style="background-color: #dc3545;">Excluir</button>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        let exclusaoModeActive = false; 
+
+        function openEntradaModal(productId, productName) {
+            document.getElementById('popupEntrada').style.display = 'flex';
+            document.getElementById('produto_id_entrada_hidden').value = productId;
+            document.getElementById('produto_nome_entrada').innerText = 'Produto: ' + JSON.parse(productName);
+        }
+
+        function openEditModal(productData) {
+            document.getElementById('editarProdutoModal').style.display = 'flex';
+            document.getElementById('edit_produto_id').value = productData.ProdutoId;
+            document.getElementById('edit_nome_produto').value = productData.Nome;
+            document.getElementById('edit_quantidade').value = productData.Quantidade;
+            document.getElementById('edit_unidade_medida').value = productData.UnidadeMedida;
+            document.getElementById('edit_valor_unitario').value = productData.Valor;
+            document.getElementById('edit_limite_minimo').value = productData.LimiteAlerta;
+        }
+
+        function toggleExclusaoMode() {
+            exclusaoModeActive = !exclusaoModeActive; 
+
+            const checkboxes = document.querySelectorAll('.checkbox_produto');
+            const checkboxHeader = document.querySelector('.checkbox-header');
+            const selectAllCheckbox = document.getElementById('selecionar_todos');
+            const toggleExclusaoBtn = document.getElementById('toggle_exclusao_mode_btn');
+            const confirmDeleteBtn = document.getElementById('confirm_delete_selected_btn');
+            const cancelDeleteBtn = document.getElementById('cancel_delete_mode_btn');
+
+            if (exclusaoModeActive) {
+                checkboxHeader.classList.remove('hidden-checkbox-col');
+            } else {
+                checkboxHeader.classList.add('hidden-checkbox-col');
+                selectAllCheckbox.checked = false;
+            }
+
+            checkboxes.forEach(checkbox => {
+                const parentCell = checkbox.closest('.checkbox-cell');
+                if (exclusaoModeActive) {
+                    parentCell.classList.remove('hidden-checkbox-col');
+                    checkbox.checked = false;
+                } else {
+                    parentCell.classList.add('hidden-checkbox-col');
+                    checkbox.checked = false;
+                }
+            });
+
+            if (exclusaoModeActive) {
+                confirmDeleteBtn.classList.remove('hidden-button');
+                cancelDeleteBtn.classList.remove('hidden-button');
+                toggleExclusaoBtn.classList.add('hidden-button');
+            } else {
+                confirmDeleteBtn.classList.add('hidden-button');
+                cancelDeleteBtn.classList.add('hidden-button');
+                toggleExclusaoBtn.classList.remove('hidden-button');
+            }
+        }
+
+        document.getElementById('selecionar_todos').addEventListener('change', function () {
+            let checkboxes = document.querySelectorAll('.checkbox_produto');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
+
+        function openDeleteSelectedModal() {
+            let selectedCheckboxes = document.querySelectorAll('.checkbox_produto:checked');
+            if (selectedCheckboxes.length === 0) {
+                alert('Por favor, selecione ao menos um produto para excluir.');
+                return;
+            }
+            document.getElementById('confirmarExclusaoMultiplaModal').style.display = 'flex';
+        }
+
+        function submitDeleteForm() {
+            // O formulário já tem o asp-page-handler="ExcluirSelecionados"
+            document.getElementById('form_excluir_selecionados').submit();
+        }
+    </script>
+}

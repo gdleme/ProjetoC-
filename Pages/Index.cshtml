@@ -1,0 +1,48 @@
+@page
+@model CafeAlvoradaCSharp.Pages.IndexModel
+@{
+    ViewData["Title"] = "Início";
+}
+
+<div class="welcome">
+    <span>Olá,</span>
+    <b>@Model.NomeUsuario</b>
+    <p></p>
+</div>
+
+<section class="intro-section">
+    <h2>Bem-vindo ao ERP Alvorada</h2>
+    <p>Nesta àrea estão relacionados os módulos para gestão do seu negócio</p>
+    <div class="badge">
+        <span>4 Módulos</span>
+    </div>
+</section>
+
+<section class="modules-section">
+    <a asp-page="/Pedidos">
+        <div class="modules-container">
+            <div class="module-card">
+                <img src="~/icons/Pedidosbig.png" alt="Ícone Pedidos">
+                <div>Pedidos</div>
+            </div>
+    </a>
+    <a asp-page="/Clientes">
+        <div class="module-card">
+            <img src="~/icons/Cliente-img.png" alt="Ícone Clientes">
+            <div>Clientes</div>
+        </div>
+    </a>
+    <a asp-page="/Estoque">
+        <div class="module-card">
+            <img src="~/icons/Estoque-img.png" alt="Ícone Estoque">
+            <div>Estoque</div>
+        </div>
+    </a>
+    <a asp-page="/Licencas">
+        <div class="module-card">
+            <img src="~/icons/Licenca-img.png" alt="Ícone Licenca">
+            <div>Licenças</div>
+        </div>
+    </a>
+    </div>
+</section>

@@ -1,0 +1,222 @@
+@page
+@model CafeAlvoradaCSharp.Pages.ClientesModel
+@{
+    ViewData["Title"] = "Clientes";
+}
+
+<div class="greeting">
+    <span>Olá,</span>
+    <b>@Model.NomeUsuario</b>
+</div>
+
+<section class="container">
+    <h2>Gestão de clientes</h2>
+    <p>Nesta área são relacionados os clientes e a quantidade de pedidos / última compra</p>
+    <div class="badge">
+        <span>@Model.TotalClientes Clientes</span>
+    </div>
+
+    <button class="btn-novo-cliente" onclick="abrirModalCliente()">
+        Novo Cliente
+    </button>
+
+    @if (!string.IsNullOrEmpty(Model.MensagemFeedback))
+    {
+        <p style="color: @(Model.MensagemFeedback.StartsWith("Erro:") ? "red" : "green"); font-weight: bold; text-align: center; margin-top: 15px;">
+            @Model.MensagemFeedback
+        </p>
+    }
+
+    <div id="popupCliente" class="popup-cliente-modal">
+        <div class="popup-content">
+            <form method="POST" asp-page-handler="SalvarCliente">
+                <div class="header-modal">
+                    <div>
+                        <span class="modal-close-btn" onclick="fecharModalCliente()">←</span>
+                        <span>Cadastro de cliente</span>
+                    </div>
+                    <span>Cadastre o cliente</span>
+                </div>
+                
+                <input type="text" asp-for="ClienteNovo.Nome" placeholder="Digite o nome" required class="modal-input">
+                <input type="email" asp-for="ClienteNovo.Email" placeholder="Digite o E-mail" class="modal-input">
+                <input type="text" asp-for="ClienteNovo.Telefone" placeholder="Digite o telefone" class="modal-input" onkeyup="formatarTelefone(this)">
+                <input type="text" asp-for="ClienteNovo.Cpf" placeholder="Digite o CPF" required class="modal-input" onkeyup="formatarCpf(this)">
+
+                <div class="modal-buttons">
+                    <button type="submit" class="btn-salvar">
+                        Salvar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="popupEdicaoCliente" class="popup-cliente-modal">
+        <div class="popup-content">
+            <form method="POST" asp-page-handler="EditarCliente">
+                <div class="header-modal">
+                    <div>
+                        <span class="modal-close-btn" onclick="fecharModalEdicaoCliente()">←</span>
+                        <span>Edição de cliente</span>
+                    </div>
+                    <span>Edite os dados do cliente</span>
+                </div>
+                <input type="hidden" asp-for="ClienteEdicao.ClienteId" id="cliente_id_edicao">
+
+                <input type="text" asp-for="ClienteEdicao.Nome" id="nome_edicao" placeholder="Digite o nome" required class="modal-input">
+                <input type="email" asp-for="ClienteEdicao.Email" id="email_edicao" placeholder="Digite o E-mail" class="modal-input">
+                <input type="text" asp-for="ClienteEdicao.Telefone" id="telefone_edicao" placeholder="Digite o telefone" class="modal-input" onkeyup="formatarTelefone(this)">
+                <input type="text" asp-for="ClienteEdicao.Cpf" id="cpf_edicao" placeholder="Digite o CPF" required class="modal-input" onkeyup="formatarCpf(this)">
+
+                <div class="modal-buttons">
+                    <button type="submit" class="btn-salvar">
+                        Salvar Edição
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="popupConfirmacaoExclusao" class="popup-cliente-modal">
+        <div class="popup-content small-popup">
+            <form method="POST" asp-page-handler="ExcluirCliente">
+                <div class="header-modal">
+                    <div>
+                        <span class="modal-close-btn" onclick="fecharModalConfirmacaoExclusao()">←</span>
+                        <span>Confirmar Exclusão</span>
+                    </div>
+                    <span>Tem certeza que deseja excluir o cliente?</span>
+                </div>
+                <input type="hidden" name="clienteIdParaExcluir" id="cliente_id_excluir_hidden" />
+                <p id="mensagemConfirmacaoExclusao" style="text-align: center; margin: 20px 0; font-weight: bold;"></p>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-cancelar" onclick="fecharModalConfirmacaoExclusao()">Cancelar</button>
+                    <button type="submit" class="btn-excluir-confirmar">Excluir</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</section>
+
+<section>
+    <div class="tabela">
+        <div class="tabela-header">
+            <div>Nome</div>
+            <div>CPF</div>
+            <div>E-mail</div>
+            <div>Telefone</div>
+            <div>Última Compra</div>
+            <div>Qtd Pedidos</div>
+            <div>Ações</div>
+        </div>
+
+        @if (Model.ClientesVM.Any())
+        {
+            @foreach (var cliente in Model.ClientesVM)
+            {
+                <div class="tabela-row">
+                    <div>@cliente.Nome</div>
+                    <div>@cliente.Cpf</div>
+                    <div>@cliente.Email</div>
+                    <div>@cliente.Telefone</div>
+                    <div>@cliente.UltimaCompra?.ToString("d/M/yyyy") ?? "N/A"</div>
+                    <div>@cliente.QtdPedidos</div>
+                    <div class="tabela-actions">
+                        <button class="btn-editar"
+                                onclick="abrirModalEdicaoCliente(
+                                    @cliente.ClienteId,
+                                    '@Html.Raw(System.Text.Json.JsonSerializer.Serialize(cliente.Nome))',
+                                    '@Html.Raw(System.Text.Json.JsonSerializer.Serialize(cliente.Email))',
+                                    '@Html.Raw(System.Text.Json.JsonSerializer.Serialize(cliente.Telefone))',
+                                    '@Html.Raw(System.Text.Json.JsonSerializer.Serialize(cliente.Cpf))'
+                                )">
+                            <i class="fa-solid fa-pencil"></i>
+                        </button>
+                        <button class="btn-excluir" onclick="confirmarExclusao(@cliente.ClienteId, '@Html.Raw(System.Text.Json.JsonSerializer.Serialize(cliente.Nome))')">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class='tabela-row'><div style='grid-column: 1 / span 7; text-align: center; padding: 20px;'>Nenhum cliente encontrado.</div></div>
+        }
+    </div>
+</section>
+
+
+@section Scripts {
+    <script>
+        function formatarCpf(input) {
+            let cpf = input.value.replace(/\D/g, '');
+            if (cpf.length > 11) {
+                cpf = cpf.substring(0, 11);
+            }
+            if (cpf.length > 9) {
+                cpf = cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+            } else if (cpf.length > 6) {
+                cpf = cpf.replace(/(\d{3})(\d{3})(\d{3})/, '$1.$2.$3');
+            } else if (cpf.length > 3) {
+                cpf = cpf.replace(/(\d{3})(\d{3})/, '$1.$2');
+            }
+            input.value = cpf;
+        }
+
+        function formatarTelefone(input) {
+            let telefone = input.value.replace(/\D/g, '');
+            if (telefone.length > 11) {
+                telefone = telefone.substring(0, 11);
+            }
+            if (telefone.length > 10) {
+                telefone = telefone.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3');
+            } else if (telefone.length > 6) {
+                telefone = telefone.replace(/^(\d{2})(\d{4})(\d{4}).*/, '($1) $2-$3');
+            } else if (telefone.length > 2) {
+                telefone = telefone.replace(/^(\d{2})(\d+)/, '($1) $2');
+            }
+            input.value = telefone;
+        }
+
+        function abrirModalCliente() {
+            document.getElementById('popupCliente').style.display = 'flex';
+            document.body.classList.add('no-scroll');
+        }
+
+        function fecharModalCliente() {
+            document.getElementById('popupCliente').style.display = 'none';
+            document.body.classList.remove('no-scroll');
+        }
+
+        function abrirModalEdicaoCliente(id, nome, email, telefone, cpf) {
+            document.getElementById('popupEdicaoCliente').style.display = 'flex';
+            document.body.classList.add('no-scroll');
+
+            document.getElementById('cliente_id_edicao').value = id;
+            document.getElementById('nome_edicao').value = nome;
+            document.getElementById('email_edicao').value = email;
+            document.getElementById('telefone_edicao').value = telefone;
+            document.getElementById('cpf_edicao').value = cpf;
+        }
+
+        function fecharModalEdicaoCliente() {
+            document.getElementById('popupEdicaoCliente').style.display = 'none';
+            document.body.classList.remove('no-scroll');
+        }
+        
+        function confirmarExclusao(clienteId, clienteNome) {
+            document.getElementById('mensagemConfirmacaoExclusao').textContent = `Você realmente deseja excluir o cliente ${clienteNome}?`;
+            document.getElementById('cliente_id_excluir_hidden').value = clienteId; // Seta o ID no input hidden
+            document.getElementById('popupConfirmacaoExclusao').style.display = 'flex';
+            document.body.classList.add('no-scroll');
+        }
+
+        function fecharModalConfirmacaoExclusao() {
+            document.getElementById('popupConfirmacaoExclusao').style.display = 'none';
+            document.body.classList.remove('no-scroll');
+        }
+    </script>
+}
