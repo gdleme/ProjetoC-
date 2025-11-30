@@ -104,9 +104,9 @@ O sistema segue um modelo em camadas para garantir a organização e manutenibil
 
 **Figura 1 – Diagrama da Arquitetura do Sistema**
 
-graph TD
+
+    graph TD
     User((Usuário))
-    
     subgraph "Camada de Apresentação (Views/Public)"
         HTML[Interface HTML/CSS]
         JS[Interatividade JS]
@@ -146,14 +146,14 @@ O sistema utiliza um banco de dados relacional MySQL composto por seis tabelas p
 
 **Figura 2 – Diagrama de Entidade-Relacionamento**
 
-erDiagram
+
+    erDiagram
     USUARIOS {
         int usuario_id PK
         string nome_usuario
         string senha
         enum tipo_usuario
     }
-    
     CLIENTES ||--o{ PEDIDOS : "realiza (1:N)"
     CLIENTES {
         int cliente_id PK
