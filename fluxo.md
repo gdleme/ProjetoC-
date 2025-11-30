@@ -305,8 +305,3 @@ Abaixo, os principais casos de teste executados para validação do sistema:
 
 O sistema *Café Alvorada* atende às necessidades essenciais de gestão de uma cafeteria, integrando pedidos, estoque, clientes e licenças de forma eficiente. A arquitetura simples e modular facilita a manutenção e permite futuras expansões, como a inclusão de módulos financeiros, integração fiscal e desenvolvimento de aplicativo móvel.
 
----
-
-# REFERÊNCIAS
-
-* ASSOCIAÇÃO BRASILEIRA DE NORMAS TÉCNICAS. **NBR 14724**: Informação e documentação: Trabalhos acadêmicos: Apresentação. Rio de Janeiro, 2011.
