@@ -1,40 +1,26 @@
-erDiagram
-    CLIENTES ||--o{ PEDIDOS : "realiza (1:N)"
-    PEDIDOS ||--|{ ITEM_PEDIDO : "contém (1:N)"
-    ESTOQUE ||--o{ ITEM_PEDIDO : "compõe (1:N)"
+graph TD
+    User((Usuário))
     
-    USUARIOS {
-        int usuario_id PK
-        string nome_usuario
-        string senha
-        enum tipo_usuario
-    }
+    subgraph "Camada de Apresentação (Views/Public)"
+        HTML[Interface HTML/CSS]
+        JS[Interatividade JS]
+    end
     
-    CLIENTES {
-        int cliente_id PK
-        string nome
-        string cpf UK
-        string email
-    }
+    subgraph "Camada de Aplicação (Backend)"
+        Auth[Autenticação (Auth)]
+        Logic[Lógica de Negócio (PHP)]
+    end
     
-    PEDIDOS {
-        int pedido_id PK
-        int cliente_id FK
-        date data_pedido
-        float valor
-        string status
-    }
+    subgraph "Camada de Dados (Persistência)"
+        Config[Conexão (Database.php)]
+        DB[(Banco de Dados MySQL)]
+    end
 
-    ESTOQUE {
-        int produto_id PK
-        string nome
-        int quantidade
-        float valor
-    }
-
-    LICENCAS {
-        int licenca_id PK
-        string nome_licenca
-        date data_validade
-        string status_notificacao
-    }
+    User -->|Acessa| HTML
+    HTML -->|Envia Requisição| Logic
+    Logic -->|Verifica Sessão| Auth
+    Logic -->|Query SQL| Config
+    Config -->|Persistência| DB
+    DB -->|Retorna Dados| Config
+    Config -->|Dados| Logic
+    Logic -->|Renderiza| HTML
