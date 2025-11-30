@@ -17,9 +17,9 @@ SÃO PAULO - SP
 
 **CAFÉ ALVORADA: SISTEMA ERP PARA CAFETERIA**
 
-> Trabalho de Conclusão de Curso (TCC) apresentado como requisito parcial para obtenção do título de Bacharel em [Seu Curso].
+> Projeto semestral.
 >
-> **Área de Concentração:** Desenvolvimento de Sistemas.
+> **Área de Concentração:** Análise e Desenvolvimento de Sistemas.
 > **Orientador(a):** [Adriano Michelotti Schroeder]
 
 <br><br>
@@ -104,7 +104,7 @@ O sistema segue um modelo em camadas para garantir a organização e manutenibil
 
 **Figura 1 – Diagrama da Arquitetura do Sistema**
 
-*[graph TD
+graph TD
     User((Usuário))
     
     subgraph "Camada de Apresentação (Views/Public)"
@@ -129,7 +129,7 @@ O sistema segue um modelo em camadas para garantir a organização e manutenibil
     Config -->|Persistência| DB
     DB -->|Retorna Dados| Config
     Config -->|Dados| Logic
-    Logic -->|Renderiza| HTML]*
+    Logic -->|Renderiza| HTML
 
 ---
 
@@ -146,7 +146,7 @@ O sistema utiliza um banco de dados relacional MySQL composto por seis tabelas p
 
 **Figura 2 – Diagrama de Entidade-Relacionamento**
 
-*[erDiagram
+erDiagram
     USUARIOS {
         int usuario_id PK
         string nome_usuario
@@ -199,7 +199,7 @@ O sistema utiliza um banco de dados relacional MySQL composto por seis tabelas p
         date data_validade
         enum prazo_expiracao
         string caminho_documento
-    }]*
+    }
 
 ---
 
